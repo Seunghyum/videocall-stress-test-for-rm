@@ -24,4 +24,17 @@ NUMBER_OF_PARTICIPATE=15 # 반복해서 참여할 인원
 $ yarn start -TARGET_URL=https://st.remotemeeting.com -ID=shmoon@rspt.com -PW=xxxxxxxx -NUMBER_OF_PARTICIPATE=15
 ```
 
-1. 
+## Docker command
+
+### start docker
+systemctl start docker
+
+### build docker
+docker build -t davemoon/video-call .
+
+### run docker
+docker run --add-host="chrome:127.0.0.1"  -it -v /Users/shmoon/Code/videocall-stress-test-for-rm:/app --name video-call davemoon/video-call
+
+### prune docker
+docker system prune 
+

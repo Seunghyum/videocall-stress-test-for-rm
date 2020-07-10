@@ -30,7 +30,6 @@ function* loop(number) {
           "--incognito",
           "--use-fake-ui-for-media-stream",
           "--use-fake-device-for-media-stream",
-          "--no-sandbox",
           // --allow-file-access-from-files - Allows API access for file:// URLs
           // --use-file-for-fake-audio-capture=<filename> - Provide a file to use when capturing audio.
           // --use-file-for-fake-video-capture=<filename> - Provide a file to use when capturing video.
@@ -40,13 +39,11 @@ function* loop(number) {
       // Launch chrome using chrome-launcher
       const chrome = await chromeLauncher.launch(opts);
       opts.port = chrome.port;
-      // console.log("opts : ", opts);
 
       // Connect to it using puppeteer.connect().
       const resp = await util.promisify(request)(
         `http://localhost:${opts.port}/json/version`
       );
-      // console.log("resp : ", resp);
       const { webSocketDebuggerUrl } = JSON.parse(resp.body);
       const browser = await puppeteer.connect({
         browserWSEndpoint: webSocketDebuggerUrl,
@@ -58,16 +55,27 @@ function* loop(number) {
       await page.setViewport({ width: 1200, height: 900 });
       await page.setDefaultTimeout(999999);
 
-      await page.goto(CLI_TARGET_URL || TARGET_URL, {
+      await page.goto("https://st.remotemeeting.com/ko/home", {
         waitUntil: "networkidle2",
       });
-      await page.screenshot({ path: "goto.png" });
+      // await page.screenshot({ path: "goto.png" });
       console.log("goto--end");
       // login by Guest
-      const submitBtn = await page.$("#dialog-wrap [type=submit]");
-      await page.type("#nickname", `bot-${i}`, { delay: 100 });
-      await submitBtn.click();
-      await page.screenshot({ path: "submit.png" });
+      const guestEntryBtn = await page.$(
+        ".go-room-form-box-inner form [type=submit]"
+      );
+      await guestEntryBtn.click();
+      await page.type("input[name=accessCode]", "123 142829", { delay: 100 });
+      await guestEntryBtn.click();
+
+      await page.waitForSelector("#create-nickname-wrap input#nickname");
+      await page.type("#create-nickname-wrap input#nickname", `bot-${i}`, {
+        delay: 100,
+      });
+      const guestNameBtn = await page.$(
+        "#create-nickname-wrap button[type=submit]"
+      );
+      await guestNameBtn.click();
       console.log("submit--end");
     } catch (e) {
       console.log("error : ", e);
